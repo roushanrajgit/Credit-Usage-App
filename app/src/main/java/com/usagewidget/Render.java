@@ -29,13 +29,16 @@ final class Render {
   s.append(visible.length()).append(visible.length()==1?" account":" accounts");
   if(hidden>0)s.append(" · ").append(hidden).append(" hidden");
   if(at>0)s.append(" · ").append(UsageFormat.age(at));
-  String status=Store.prefs(c).getString("status","");
-  if(status.startsWith("codex:"))s.append("\nCodex: ").append(status.substring(6).trim());
+  // Surface Codex background failures per login (Claude failures show on the account cards).
+  for(int slot:Store.slots(c,Profiles.CODEX)){
+   String st=Store.loginStatus(c,Profiles.CODEX,slot);
+   if(!st.isEmpty()&&!st.equals("Synced")&&!st.startsWith("Discovering"))s.append("\nChatGPT ").append(Store.label(c,Profiles.CODEX,slot)).append(": ").append(st);
+  }
   return s.toString();
  }
 
  static String emptyText(Context c){
-  if(Store.rows(c).length()==0)return "Open Usage Widget to connect your accounts.";
+  if(Store.accounts(c).length()==0)return "Open Usage Widget to connect your accounts.";
   return "All accounts hidden · open the app to choose.";
  }
 

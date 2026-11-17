@@ -31,9 +31,18 @@ public class DisplayActivity extends Activity {
   root.addView(options);
 
   root.addView(section(this,"ACCOUNTS · SHOW ON WIDGET AND APP"));
-  JSONArray rows=Store.rows(this);Set<String> hidden=Store.hidden(this);
+  JSONArray rows=Store.accounts(this);Set<String> hidden=Store.hidden(this);
   if(rows.length()==0){TextView t=text(this,"No accounts discovered yet. Connect Claude or Codex from the main screen.",13,Render.MUTED,false,false);t.setPadding(dp(this,4),0,0,0);root.addView(t);}
-  for(int i=0;i<rows.length();i++){JSONObject r=rows.optJSONObject(i);if(r!=null)root.addView(accountToggle(r,!hidden.contains(r.optString("id"))));}
+  // With more than one login, group workspaces under the login (email or your name for it) they came from.
+  boolean group=Store.slots(this,Profiles.CLAUDE).size()+Store.slots(this,Profiles.CODEX).size()>1;
+  String last="";
+  for(int i=0;i<rows.length();i++){
+   JSONObject r=rows.optJSONObject(i);if(r==null)continue;
+   String provider=r.optString("provider");int slot=Store.rowSlot(r);
+   String header=Profiles.title(provider)+" · "+Store.label(this,provider,slot);
+   if(group&&!header.equals(last)){TextView h=text(this,header,12,Render.MUTED,false,false);h.setPadding(dp(this,4),dp(this,12),0,dp(this,2));root.addView(h);last=header;}
+   root.addView(accountToggle(r,!hidden.contains(r.optString("id"))));
+  }
   TextView note=text(this,"New accounts appear switched on. Hidden accounts still refresh, so switching one back on shows current values. Disconnect & delete data resets these choices.",12,Render.MUTED,false,false);
   note.setPadding(dp(this,4),dp(this,14),dp(this,4),0);root.addView(note);
  }

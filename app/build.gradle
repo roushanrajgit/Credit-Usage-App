@@ -7,7 +7,7 @@ def usePreviewSigning = signingPath && signingStorePassword && signingKeyPasswor
 android {
  namespace 'com.usagewidget'
  compileSdk 36
- defaultConfig { applicationId 'com.usagewidget'; minSdk 26; targetSdk 36; versionCode 4; versionName '0.3.1-preview' }
+ defaultConfig { applicationId 'com.usagewidget'; minSdk 26; targetSdk 36; versionCode 5; versionName '0.4.0-preview' }
  signingConfigs {
   if (usePreviewSigning) {
    preview {

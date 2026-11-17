@@ -18,8 +18,15 @@ async function run(responses,origin='https://claude.ai'){
  x=await run([{status:200,body:[{uuid:'org-1'}]},{status:200,body:{five_hour:{utilization:101},seven_day:null}}]);assert.equal(x.result.rows[0].session.utilization,null);
  x=await run([],'https://evil.example');assert.equal(x.calls.length,0);assert.equal(x.result,undefined);
  x=await run([{status:200,body:[{uuid:'api-org',name:'Console',capabilities:['api']},{uuid:'chat-org',name:'Personal',capabilities:['chat','claude_max']}]},{status:200,body:{five_hour:{utilization:5,resets_at:'2026-11-18T12:00:00.123456+00:00'},seven_day:{utilization:1}}}]);
- assert.equal(x.calls.length,2);assert.equal(x.calls[1].path,'/api/organizations/chat-org/usage');assert.equal(x.result.rows.length,1);assert.equal(x.result.rows[0].session.resets_at,'2026-11-18T12:00:00.123456+00:00');
- x=await run([{status:200,body:[{uuid:'api-org',capabilities:['api']}]}]);assert.equal(x.calls.length,1);assert.equal(x.result.error,undefined);assert.equal(x.result.rows.length,0);
+ assert.equal(x.calls.length,3);assert.equal(x.calls[1].path,'/api/organizations/chat-org/usage');assert.equal(x.calls[2].path,'/api/account');assert.equal(x.result.email,null);assert.equal(x.result.rows.length,1);assert.equal(x.result.rows[0].session.resets_at,'2026-11-18T12:00:00.123456+00:00');
+ x=await run([{status:200,body:[{uuid:'api-org',capabilities:['api']}]}]);assert.equal(x.calls.length,2);assert.equal(x.result.error,undefined);assert.equal(x.result.rows.length,0);
  x=await run([{status:401}]);assert.equal(x.result.error,'HTTP 401');
- console.log('12 Claude browser scenarios passed (mock fetch, not live Claude)');
+ // login email: valid one is returned; junk or failure never breaks the sync
+ x=await run([{status:200,body:[{uuid:'org-1',capabilities:['chat']}]},{status:200,body:{five_hour:{utilization:5},seven_day:null}},{status:200,body:{email_address:'me@example.com',tokens:'secret-not-copied'}}]);
+ assert.equal(x.result.email,'me@example.com');assert.equal(x.result.rows.length,1);assert(!JSON.stringify(x.result).includes('secret-not-copied'));
+ x=await run([{status:200,body:[{uuid:'org-1'}]},{status:200,body:{five_hour:{utilization:5}}},{status:200,body:{email_address:'not an email <script>'}}]);
+ assert.equal(x.result.email,null);assert.equal(x.result.rows.length,1);
+ x=await run([{status:200,body:[{uuid:'org-1'}]},{status:200,body:{five_hour:{utilization:5}}},{status:403}]);
+ assert.equal(x.result.email,null);assert.equal(x.result.error,undefined);
+ console.log('15 Claude browser scenarios passed (mock fetch, not live Claude)');
 })().catch(e=>{console.error(e);process.exitCode=1;});

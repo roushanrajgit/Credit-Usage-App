@@ -13,6 +13,9 @@ ClaudeBrowser.java now executes assets/claude-usage.js on the visible HTTPS clau
 
 Claude is foreground only: the Claude screen opens settings/usage and auto-syncs once a signed-in page loads (branch fix/claude-auto-sync; unverified on device). Do not claim a 30-minute Claude background refresh. Codex keeps scheduled native refresh. Widget/app refresh opens the Claude connection for an explicit browser refresh. Validate values against the provider usage page and test stale values after airplane mode.
 
+## Multiple logins
+Slots 2-3 per provider run in separate processes with WebView.setDataDirectorySuffix (App.java). Only the main process writes Store; other processes go through SyncProvider. Keep slot 1 on the main process so existing logins survive updates.
+
 ## Collaboration
 Make provider-specific changes in branches/PRs. Preserve Codex login/fetch behavior when changing Claude. Respect authentication, security checks and provider restrictions; never bypass challenges, log secrets, or send prompts to obtain usage. Do not claim a live fix from a build alone. See README for on-device checklist, diagnostics and build commands.
 
