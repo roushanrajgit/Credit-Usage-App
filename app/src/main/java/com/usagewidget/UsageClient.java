@@ -31,12 +31,10 @@ final class UsageClient {
   String token=session.optString("accessToken","");if(token.isEmpty())throw new IOException("Sign in again");
   JSONObject discovered=(JSONObject)get("chatgpt.com","/backend-api/accounts/check/v4-2023-04-27",token,null);
   JSONObject accounts=discovered.optJSONObject("accounts");if(accounts==null)throw new IOException("Workspace discovery unavailable");
-  JSONArray out=new JSONArray();Iterator<String> keys=accounts.keys();
-  while(keys.hasNext()){
-   String k=keys.next();JSONObject entry=accounts.optJSONObject(k);if(entry==null)continue;
-   JSONObject a=entry.optJSONObject("account");if(a==null||a.optBoolean("is_deactivated"))continue;
-   String id=a.optString("account_id","");if(id.isEmpty()||id.equals("null"))continue;
-   JSONObject row=new JSONObject().put("id","codex:"+id).put("provider","codex").put("name","Codex · "+a.optString("name",a.optString("structure","Account"))).put("plan",a.optString("plan_type",""));
+  JSONArray out=new JSONArray();
+  for(JSONObject a:UsageFormat.codexAccounts(accounts)){
+   String id=UsageFormat.str(a,"account_id");
+   JSONObject row=new JSONObject().put("id","codex:"+id).put("provider","codex").put("name","Codex · "+UsageFormat.codexName(a)).put("plan",UsageFormat.str(a,"plan_type"));
    try {JSONObject u=(JSONObject)get("chatgpt.com","/backend-api/wham/usage",token,id);
     JSONObject limits=u.optJSONObject("rate_limit");
     row.put("session",limits==null?null:limits.optJSONObject("primary_window")).put("weekly",limits==null?null:limits.optJSONObject("secondary_window")).put("updated",System.currentTimeMillis());
