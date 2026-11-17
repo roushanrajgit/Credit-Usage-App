@@ -1,0 +1,23 @@
+plugins { id 'com.android.application' }
+def signingPath = System.getenv('USAGE_WIDGET_KEYSTORE')
+def signingStorePassword = System.getenv('USAGE_WIDGET_STORE_PASSWORD')
+def signingKeyPassword = System.getenv('USAGE_WIDGET_KEY_PASSWORD')
+def signingAlias = System.getenv('USAGE_WIDGET_KEY_ALIAS')
+def usePreviewSigning = signingPath && signingStorePassword && signingKeyPassword && signingAlias
+android {
+ namespace 'com.usagewidget'
+ compileSdk 36
+ defaultConfig { applicationId 'com.usagewidget'; minSdk 26; targetSdk 36; versionCode 2; versionName '0.2.0-preview' }
+ signingConfigs {
+  if (usePreviewSigning) {
+   preview {
+    storeFile file(signingPath)
+    storePassword signingStorePassword
+    keyPassword signingKeyPassword
+    keyAlias signingAlias
+   }
+  }
+ }
+ buildTypes { debug { if (usePreviewSigning) signingConfig signingConfigs.preview } }
+ compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
