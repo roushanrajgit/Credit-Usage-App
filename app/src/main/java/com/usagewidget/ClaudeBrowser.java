@@ -2,6 +2,7 @@ package com.usagewidget;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.webkit.WebView;
 import org.json.*;
@@ -14,6 +15,7 @@ final class ClaudeBrowser {
  interface Completion { void done(boolean success, String message, boolean retry); }
  private final Activity activity;
  private final WebView web;
+ private final int slot;
  private final Handler handler = new Handler();
  private boolean busy;
  private boolean cancelled;
@@ -21,7 +23,7 @@ final class ClaudeBrowser {
  private long deadline;
  private String key;
  private Completion completion;
- ClaudeBrowser(Activity a, WebView w) { activity=a;web=w; }
+ ClaudeBrowser(Activity a, WebView w, int slot) { activity=a;web=w;this.slot=slot; }
  static boolean trusted(String url) {
   if(url==null)return false;
   Uri u=Uri.parse(url);
@@ -63,7 +65,12 @@ final class ClaudeBrowser {
     if(auto&&"HTTP 401".equals(result.optString("error"))){interrupted("Sign in to Claude · usage syncs automatically afterwards.");return;}
     if(result.has("error")){finish(false,result.optString("error","Claude refresh unavailable"));return;}
     JSONArray rows=result.getJSONArray("rows");
-    ClaudeSnapshots.save(activity,rows);
+    // Results go to the main process, which owns the saved readings (this may be a separate login process).
+    Bundle out=SyncProvider.args("claude",slot);
+    out.putString("rows",rows.toString());
+    String email=result.optString("email","");
+    if(email.length()<=254&&email.matches("[^\\s@]+@[^\\s@]+"))out.putString("email",email);
+    SyncProvider.call(activity,"claudeSave",out);
     finish(true,rows.length()==0?"No Claude chat workspaces found for this login.":"Claude usage updated.");
    }catch(Exception e){finish(false,"Unexpected Claude response · saved usage retained.");}
   });
@@ -77,7 +84,7 @@ final class ClaudeBrowser {
  void cancel(){cancelled=true;busy=false;handler.removeCallbacksAndMessages(null);completion=null;}
  private void finish(boolean ok,String message){
   busy=false;handler.removeCallbacksAndMessages(null);
-  if(!ok)ClaudeSnapshots.fail(activity,message);
+  if(!ok){Bundle out=SyncProvider.args("claude",slot);out.putString("message",message);out.putBoolean("connect",!auto);SyncProvider.call(activity,"claudeFail",out);}
   if(trusted(web.getUrl()))web.evaluateJavascript("delete window["+JSONObject.quote(key==null?"":key)+"]",null);
   Completion cb=completion;completion=null;if(cb!=null)cb.done(ok,ok?message:"Stale · "+message,false);
  }

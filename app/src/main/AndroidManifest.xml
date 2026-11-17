@@ -3,10 +3,17 @@
 <uses-permission android:name="android.permission.INTERNET"/>
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-<application android:label="Usage Widget" android:icon="@drawable/icon" android:theme="@android:style/Theme.Material.NoActionBar" android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
+<application android:name=".App" android:label="Usage Widget" android:icon="@drawable/icon" android:theme="@android:style/Theme.Material.NoActionBar" android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
 <activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity>
 <activity android:name=".LoginActivity" android:exported="false"/>
 <activity android:name=".DisplayActivity" android:exported="false"/>
+<activity android:name=".Slots$ClaudeLogin2" android:process=":c2" android:exported="false"/>
+<activity android:name=".Slots$ClaudeLogin3" android:process=":c3" android:exported="false"/>
+<activity android:name=".Slots$CodexLogin2" android:process=":x2" android:exported="false"/>
+<activity android:name=".Slots$CodexLogin3" android:process=":x3" android:exported="false"/>
+<service android:name=".Slots$CodexJob2" android:process=":x2" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true"/>
+<service android:name=".Slots$CodexJob3" android:process=":x3" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true"/>
+<provider android:name=".SyncProvider" android:authorities="com.usagewidget.sync" android:exported="false"/>
 <receiver android:name=".UsageWidget" android:exported="false"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info"/></receiver>
 <service android:name=".RefreshJob" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true"/>
 <service android:name=".RowsService" android:permission="android.permission.BIND_REMOTEVIEWS" android:exported="false"/>

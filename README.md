@@ -1,4 +1,4 @@
-# Usage Widget — Android preview 0.3
+# Usage Widget — Android preview 0.4
 
 Standard Android SDK project: API 26 minimum, API 36 target. No phone-specific APIs or companion server. This revision compiled successfully against Android API 36 and produced a signed APK. Live-account testing remains pending.
 
@@ -19,6 +19,17 @@ Browser protection/client-fingerprint differences are a plausible leading explan
 - Codex's fetch implementation and shared HTTP helper are byte-for-byte unchanged. Shared cache handling now preserves Claude during Codex updates and avoids holding its lock across network calls.
 
 Organization membership does not guarantee a paid subscription. Discovery covers identities/workspaces accessible to the current login, not unrelated email addresses. Extra usage budget is distinguished from prepaid credit.
+
+## Multiple logins (0.4)
+
+- Up to **3 Claude and 3 ChatGPT/Codex logins** (Android 9+; older devices keep one per provider). Main screen → Connections → "Add … account".
+- **Slot 1** of each provider keeps the main process and the original WebView storage, so logins from earlier versions keep working without signing in again. **Slots 2–3** run in their own processes (`:c2`, `:c3`, `:x2`, `:x3`). `App` calls `WebView.setDataDirectorySuffix` there, so each login has private cookies and storage.
+- Only the main process writes settings and readings. Login processes report usage rows (and, if available, the login email) through the non-exported `SyncProvider`. No cookies or tokens cross processes.
+- **Claude:** "Refresh all" and widget refresh open each Claude login's screen in turn. Each auto-syncs and hands over to the next; a failing login moves on after 2.5 s. **Codex:** one background job per login (`RefreshJob`, `Slots.CodexJob2/3`).
+- Each login replaces only its own rows. A workspace visible from two logins is shown once, using the newest reading.
+- Login names: your rename, else the email (Claude `/api/account` `email_address`, ChatGPT session `user.email`; optional, validated, stored only on the device), else "Claude account N".
+- **Sign out & remove:** slot 1 expires that site's cookies and web storage (best effort; the other provider in the shared store is untouched). Slots 2–3 stop their process and delete that WebView directory. "Disconnect & delete data" wipes all logins.
+- **Session persistence:** cookies are now also flushed when the sign-in screen is left (`onPause`) and on in-page route changes. Previously a sign-in completed without a full page load could be lost if Android closed the app.
 
 ## Display (0.3)
 
@@ -64,7 +75,7 @@ export ANDROID_HOME=/path/to/Android/sdk
 ./build-apk.sh
 ```
 
-Output: build/UsageWidget-preview.apk. The script creates a non-debuggable APK without diagnostics and explicitly packages the JavaScript asset. Both routes use versionCode 4, versionName 0.3.1-preview.
+Output: build/UsageWidget-preview.apk. The script creates a non-debuggable APK without diagnostics and explicitly packages the JavaScript asset. Both routes use versionCode 5, versionName 0.4.0-preview.
 
 Signing environment variables: USAGE_WIDGET_KEYSTORE (absolute private local path), USAGE_WIDGET_STORE_PASSWORD, USAGE_WIDGET_KEY_PASSWORD, USAGE_WIDGET_KEY_ALIAS. The script requires all four. Gradle uses that configuration when all four are set; otherwise its normal development debug key is used, which will not update the existing preview installation.
 
@@ -72,7 +83,7 @@ Signing keys are excluded from this repository. Keep your existing preview signi
 
 ## Verification of this revision
 
-- Twelve Node mock-fetch scenarios pass (adds: API-only organization skipped, offset reset timestamp, signed-out 401). Original nine: multiple/deduplicated organizations and partial 403, full 403, HTML challenge, sanitized network error, empty inventory, invalid organization path, unexpected usage shape, out-of-range utilization, foreign origin. Assertions cover credentials, same-origin mode, redirect refusal and no Authorization header.
+- Fifteen Node mock-fetch scenarios pass (adds: login email valid/invalid/failed)… earlier: twelve (adds: API-only organization skipped, offset reset timestamp, signed-out 401). Original nine: multiple/deduplicated organizations and partial 403, full 403, HTML challenge, sanitized network error, empty inventory, invalid organization path, unexpected usage shape, out-of-range utilization, foreign origin. Assertions cover credentials, same-origin mode, redirect refusal and no Authorization header.
 - All 11 Java files parsed with the JDK compiler parser: syntax only, NOT Android type checking/compilation.
 - build-apk.sh shell syntax passed.
 - Codex fetch/native HTTP helper compared byte-for-byte with the original.

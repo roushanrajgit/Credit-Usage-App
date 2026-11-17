@@ -26,8 +26,10 @@ final class UsageClient {
    }
   }finally{con.disconnect();}
  }
- static JSONArray codex()throws Exception {
+ /** Discover this login's Codex workspaces and usage. emailOut[0] receives the login email when ChatGPT provides it. */
+ static JSONArray codex(String[] emailOut)throws Exception {
   JSONObject session=(JSONObject)get("chatgpt.com","/api/auth/session",null,null);
+  JSONObject user=session.optJSONObject("user");if(user!=null&&emailOut!=null)emailOut[0]=UsageFormat.str(user,"email");
   String token=session.optString("accessToken","");if(token.isEmpty())throw new IOException("Sign in again");
   JSONObject discovered=(JSONObject)get("chatgpt.com","/backend-api/accounts/check/v4-2023-04-27",token,null);
   JSONObject accounts=discovered.optJSONObject("accounts");if(accounts==null)throw new IOException("Workspace discovery unavailable");
@@ -48,27 +50,44 @@ final class UsageClient {
   }
   return out;
  }
- static void refresh(Context c){
-  if(!Store.prefs(c).getBoolean("codexConnected",false)){UsageWidget.update(c);return;}
-  JSONArray fresh=null;String failure=null;
-  try {fresh=codex();}catch(Exception e){failure=e.getMessage()==null?"Connection unavailable":e.getMessage();}
+ /**
+  * Background job entry, run in the login's own process (slot 1: main process) so it uses that login's cookies.
+  * The result goes to the main process through SyncProvider; nothing is stored here.
+  */
+ static void fetch(Context c,int slot){
+  android.os.Bundle check=SyncProvider.call(c,"connected",SyncProvider.args("codex",slot));
+  if(check==null||!check.getBoolean("connected")){if(slot==1)UsageWidget.update(c);return;}
+  JSONArray fresh=null;String failure=null;String[] email=new String[]{""};
+  try {fresh=codex(email);}catch(Exception e){failure=e.getMessage()==null?"Connection unavailable":e.getMessage();}
+  android.os.Bundle result=SyncProvider.args("codex",slot);
+  if(fresh!=null)result.putString("rows",fresh.toString());
+  if(failure!=null)result.putString("failure",failure);
+  result.putString("email",email[0]==null?"":email[0]);
+  SyncProvider.call(c,"codexResult",result);
+ }
+ /** Main process: replace this login's Codex rows; other logins and Claude rows are untouched. */
+ static void merge(Context c,int slot,JSONArray fresh,String failure,String email){
   synchronized(UsageClient.class){
-   // Disconnect may have run while a network request was in progress.
-   if(!Store.prefs(c).getBoolean("codexConnected",false))return;
+   // Sign-out may have run while a network request was in progress.
+   if(!Store.connected(c,"codex",slot))return;
    JSONArray old=Store.rows(c),all=new JSONArray();
-   for(int i=0;i<old.length();i++){JSONObject r=old.optJSONObject(i);if(r!=null&&!"codex".equals(r.optString("provider")))all.put(r);}
+   for(int i=0;i<old.length();i++){JSONObject r=old.optJSONObject(i);if(r!=null&&!mine(r,slot))all.put(r);}
    if(fresh!=null){
     for(int i=0;i<fresh.length();i++)try{
      JSONObject r=fresh.getJSONObject(i);
      if(r.has("error"))for(int j=0;j<old.length();j++){
-      JSONObject prev=old.getJSONObject(j);if(prev.optString("id").equals(r.optString("id"))){r=new JSONObject(prev.toString()).put("error",r.optString("error"));break;}
+      JSONObject prev=old.getJSONObject(j);if(mine(prev,slot)&&prev.optString("id").equals(r.optString("id"))){r=new JSONObject(prev.toString()).put("error",r.optString("error"));break;}
      }
-     all.put(r);
+     all.put(r.put("slot",slot));
     }catch(JSONException ignored){}
    }else{
-    for(int i=0;i<old.length();i++)try{JSONObject r=old.getJSONObject(i);if("codex".equals(r.optString("provider")))all.put(new JSONObject(r.toString()).put("error","Stale · reconnect or refresh"));}catch(JSONException ignored){}
+    for(int i=0;i<old.length();i++)try{JSONObject r=old.getJSONObject(i);if(mine(r,slot))all.put(new JSONObject(r.toString()).put("error","Stale · reconnect or refresh"));}catch(JSONException ignored){}
    }
-   Store.save(c,all);Store.prefs(c).edit().putString("status",failure!=null?"codex: "+failure:fresh.length()==0?"codex: no accessible workspaces":"Usage snapshot · local reset times").apply();UsageWidget.update(c);
+   Store.save(c,all);
+   android.content.SharedPreferences.Editor e=Store.prefs(c).edit().putString(Store.key("codex","Status",slot),failure!=null?failure:fresh.length()==0?"No accessible workspaces":"Synced");
+   if(email!=null&&!email.isEmpty())e.putString(Store.key("codex","Email",slot),email);
+   e.apply();UsageWidget.update(c);
   }
  }
+ static boolean mine(JSONObject r,int slot){return "codex".equals(r.optString("provider"))&&Store.rowSlot(r)==slot;}
 }

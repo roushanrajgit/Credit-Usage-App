@@ -54,7 +54,14 @@
         rows.push(row);
       }
       if (orgs.length && !valid) throw new Error('Unexpected organization response');
-      window[key] = {rows: rows};
+      // Optional: the login's email, only to label this login in the app. Failure here never fails the sync.
+      let email = null;
+      try {
+        const account = await get('/api/account');
+        const value = account && account.email_address;
+        if (typeof value === 'string' && value.length <= 254 && /^[^\s@]+@[^\s@]+$/.test(value)) email = value;
+      } catch (e) { /* label falls back to "Claude account N" */ }
+      window[key] = {rows: rows, email: email};
     } catch (e) { window[key] = {error: safeError(e)}; }
     finally { clearTimeout(timer); }
   })();

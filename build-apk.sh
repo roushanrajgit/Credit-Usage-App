@@ -8,7 +8,7 @@ ANDROID="$SDK/platforms/android-36/android.jar"
 mkdir -p build/classes build/dex build/generated
 "$TOOLS/aapt2" compile --dir app/src/main/res -o build/resources.zip
 sed 's/<manifest /<manifest package="com.usagewidget" /' app/src/main/AndroidManifest.xml > build/AndroidManifest.xml
-"$TOOLS/aapt2" link -o build/base.apk -I "$ANDROID" --manifest build/AndroidManifest.xml --java build/generated --min-sdk-version 26 --target-sdk-version 36 --version-code 4 --version-name 0.3.1-preview build/resources.zip -A app/src/main/assets
+"$TOOLS/aapt2" link -o build/base.apk -I "$ANDROID" --manifest build/AndroidManifest.xml --java build/generated --min-sdk-version 26 --target-sdk-version 36 --version-code 5 --version-name 0.4.0-preview build/resources.zip -A app/src/main/assets
 find app/src/main/java build/generated -name '*.java' > build/sources.txt
 if command -v javac >/dev/null; then
   javac -source 8 -target 8 -bootclasspath "$ANDROID" -classpath "$TOOLS/core-lambda-stubs.jar" -d build/classes @build/sources.txt
