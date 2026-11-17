@@ -81,5 +81,34 @@ final class UsageFormat {
   if("claude".equals(r.optString("provider")) && updated>0 && (!err.isEmpty() || System.currentTimeMillis()-updated>30*60*1000L))s.append("\nStale since ").append(DateTimeFormatter.ofPattern("MMM d HH:mm",Locale.getDefault()).withZone(ZoneId.systemDefault()).format(Instant.ofEpochMilli(updated))).append(" · open Claude to refresh");
   s.append("\n").append(age(updated));return s.toString();
  }
+ /** JSON text field that treats JSON null, "null" and blanks as missing (org.json's optString returns "null" for JSON null). */
+ static String str(JSONObject o,String key){
+  if(o==null||o.isNull(key))return "";
+  String s=o.optString(key,"").trim();
+  return "null".equals(s)?"":s;
+ }
+ /**
+  * Codex accounts from ChatGPT's accounts/check response, once each. The response can list the same account
+  * under its own id and under "default"; deactivated accounts and entries without an account_id are skipped.
+  */
+ static List<JSONObject> codexAccounts(JSONObject accounts){
+  List<JSONObject> out=new ArrayList<>();Set<String> seen=new HashSet<>();
+  if(accounts==null)return out;
+  Iterator<String> keys=accounts.keys();
+  while(keys.hasNext()){
+   JSONObject entry=accounts.optJSONObject(keys.next());if(entry==null)continue;
+   JSONObject a=entry.optJSONObject("account");if(a==null||a.optBoolean("is_deactivated"))continue;
+   String id=str(a,"account_id");
+   if(id.isEmpty()||!seen.add(id))continue;
+   out.add(a);
+  }
+  return out;
+ }
+ /** Account name, else its structure ("personal" → "Personal"), else "Account". */
+ static String codexName(JSONObject a){
+  String n=str(a,"name");if(!n.isEmpty())return n;
+  String s=str(a,"structure").replace('_',' ');
+  return s.isEmpty()?"Account":Character.toUpperCase(s.charAt(0))+s.substring(1);
+ }
  static int progress(JSONObject r){return left(r.optJSONObject("session"),key(r));}
 }

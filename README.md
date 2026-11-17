@@ -64,7 +64,7 @@ export ANDROID_HOME=/path/to/Android/sdk
 ./build-apk.sh
 ```
 
-Output: build/UsageWidget-preview.apk. The script creates a non-debuggable APK without diagnostics and explicitly packages the JavaScript asset. Both routes use versionCode 3, versionName 0.3.0-preview.
+Output: build/UsageWidget-preview.apk. The script creates a non-debuggable APK without diagnostics and explicitly packages the JavaScript asset. Both routes use versionCode 4, versionName 0.3.1-preview.
 
 Signing environment variables: USAGE_WIDGET_KEYSTORE (absolute private local path), USAGE_WIDGET_STORE_PASSWORD, USAGE_WIDGET_KEY_PASSWORD, USAGE_WIDGET_KEY_ALIAS. The script requires all four. Gradle uses that configuration when all four are set; otherwise its normal development debug key is used, which will not update the existing preview installation.
 
