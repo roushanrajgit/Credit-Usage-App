@@ -22,11 +22,12 @@ Organization membership does not guarantee a paid subscription. Discovery covers
 
 ## Refresh behavior and limitation
 
-1. Open Claude connection, sign in, and navigate to Settings → Usage.
-2. Tap Refresh Claude usage from this page. Keep the screen open until completion.
-3. Cards show available readings or per-organization errors. Completed discovery can include unavailable usage.
-4. Refresh all queues Codex and opens Claude when connected; tap the browser refresh button to complete Claude's update.
-5. Widget refresh opens the app/Claude connection when connected. Widget title opens the app. Opening the app alone shows cached values; it does not silently refresh Claude.
+1. Open Claude connection (app button, Refresh all, or widget refresh). It opens https://claude.ai/settings/usage directly; signed-out users are sent to Claude's own sign-in.
+2. Once a signed-in Claude page has loaded (and 1.5 s has passed without further navigation), usage syncs automatically, once per screen. Sign-in, verification and onboarding pages never auto-sync. "Refresh Claude usage now" remains as a manual retry.
+3. If the automatic attempt is interrupted by a redirect, or the page reports HTTP 401 (signed out), nothing is recorded; it re-arms and runs on the next page load. Manual taps and other failures are recorded as before.
+4. On success the screen closes and the widget redraws. Organizations whose `capabilities` list lacks `chat` (API/Console-only) are skipped; organizations without that list are kept.
+5. Labels: a workspace with an earlier successful reading shows "Stale · reason" and keeps its values; one without shows "Unavailable · reason".
+6. Reset times accept ISO timestamps with `Z` or a numeric offset (`+00:00`), via OffsetDateTime; `Instant.parse` rejected offsets on Android 13 and older.
 
 Claude background refresh every 30 minutes is NOT implemented. This approach requires a visible authenticated page; it does not create hidden background WebViews or assume unattended challenges can be solved. The toggle says Codex background refresh (~30 minutes). Android may delay jobs. Scheduled jobs redraw cached widget readings so stale labels can appear, but do not fetch Claude. During a few-hour test, Claude's timestamp should stay unchanged and become stale; Codex updates when Android runs its jobs.
 
@@ -63,7 +64,7 @@ Signing keys are excluded from this repository. Keep your existing preview signi
 
 ## Verification of this revision
 
-- Nine Node mock-fetch scenarios passed: multiple/deduplicated organizations and partial 403, full 403, HTML challenge, sanitized network error, empty inventory, invalid organization path, unexpected usage shape, out-of-range utilization, foreign origin. Assertions cover credentials, same-origin mode, redirect refusal and no Authorization header.
+- Twelve Node mock-fetch scenarios pass (adds: API-only organization skipped, offset reset timestamp, signed-out 401). Original nine: multiple/deduplicated organizations and partial 403, full 403, HTML challenge, sanitized network error, empty inventory, invalid organization path, unexpected usage shape, out-of-range utilization, foreign origin. Assertions cover credentials, same-origin mode, redirect refusal and no Authorization header.
 - All 11 Java files parsed with the JDK compiler parser: syntax only, NOT Android type checking/compilation.
 - build-apk.sh shell syntax passed.
 - Codex fetch/native HTTP helper compared byte-for-byte with the original.

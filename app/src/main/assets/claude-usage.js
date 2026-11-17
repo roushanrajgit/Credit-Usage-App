@@ -26,9 +26,14 @@
       if (!Array.isArray(orgs) || orgs.length > 200) throw new Error('Unexpected organization response');
       const rows = [];
       const seen = new Set();
+      let valid = 0;
       for (const org of orgs) {
         if (!org || typeof org.uuid !== 'string' || !/^[a-zA-Z0-9-]{1,100}$/.test(org.uuid) || seen.has(org.uuid)) continue;
         seen.add(org.uuid);
+        valid++;
+        // API/Console-only organizations have no chat usage page; skip them instead of showing a 403 card.
+        // Organizations without a capabilities list are kept (conservative).
+        if (Array.isArray(org.capabilities) && !org.capabilities.includes('chat')) continue;
         const row = {id: 'claude:' + org.uuid, provider: 'claude', name: 'Claude · ' + text(org.name, 'Workspace')};
         const plan = text(org.rate_limit_tier, text(org.subscription_type, ''));
         if (plan) row.plan = plan;
@@ -44,11 +49,11 @@
             row.extra = 'Extra usage budget left: ' + (Math.max(0, e.monthly_limit - e.used_credits) / 100).toFixed(2) + ' ' + text(e.currency, 'USD');
           }
         } catch (e) {
-          row.error = 'Stale · ' + safeError(e);
+          row.error = safeError(e);
         }
         rows.push(row);
       }
-      if (orgs.length && !rows.length) throw new Error('Unexpected organization response');
+      if (orgs.length && !valid) throw new Error('Unexpected organization response');
       window[key] = {rows: rows};
     } catch (e) { window[key] = {error: safeError(e)}; }
     finally { clearTimeout(timer); }
