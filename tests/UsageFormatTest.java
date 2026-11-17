@@ -13,6 +13,8 @@ public class UsageFormatTest {
   eq(UsageFormat.remaining(new JSONObject().put("utilization",101),"utilization"),"Unavailable");
   eq(UsageFormat.reset(new JSONObject().put("resets_at","2026-11-17T12:00:00Z")),1794916800000L);
   eq(UsageFormat.reset(new JSONObject().put("reset_at",1794916800L)),1794916800000L);
+  eq(UsageFormat.reset(new JSONObject().put("resets_at","2026-11-17T12:00:00.000000+00:00")),1794916800000L);
+  eq(UsageFormat.reset(new JSONObject().put("resets_at","2026-11-17T17:30:00+05:30")),1794916800000L);
   eq(UsageFormat.reset(new JSONObject().put("resets_at","unknown")),0L);
   eq(UsageFormat.progress(new JSONObject().put("provider","claude")),-1);
   eq(UsageFormat.progress(new JSONObject().put("provider","codex").put("session",new JSONObject().put("used_percent",40))),60);

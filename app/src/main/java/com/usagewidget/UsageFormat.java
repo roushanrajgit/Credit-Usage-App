@@ -12,7 +12,8 @@ final class UsageFormat {
  }
  static long reset(JSONObject w){if(w==null)return 0;
   if(w.optLong("reset_at",0)>0)return w.optLong("reset_at")*1000;
-  try{return Instant.parse(w.getString("resets_at")).toEpochMilli();}catch(Exception e){return 0;}
+  // OffsetDateTime accepts both "...Z" and "...+00:00"; Instant.parse rejects offsets on Android 13 and older.
+  try{return OffsetDateTime.parse(w.getString("resets_at")).toInstant().toEpochMilli();}catch(Exception e){return 0;}
  }
  static String resetText(JSONObject w){long t=reset(w);if(t==0)return "reset unavailable";
   if(t<=System.currentTimeMillis())return "reset passed · refresh needed";

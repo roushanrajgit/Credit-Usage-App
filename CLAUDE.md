@@ -11,7 +11,7 @@ The user can sign in and view Settings → Usage inside LoginActivity's WebView,
 
 ClaudeBrowser.java now executes assets/claude-usage.js on the visible HTTPS claude.ai page through evaluateJavascript. Same-origin fetch includes credentials, rejects redirects, discovers organizations and projects usage fields. No native JS bridge or cookie/token export. ClaudeSnapshots preserves successful readings on failure. ClaudeDiagnostics provides opt-in debug-only redacted native 403 evidence.
 
-Claude is foreground/manual only in this baseline. Do not claim a 30-minute Claude background refresh. Codex keeps scheduled native refresh. Widget/app refresh opens the Claude connection for an explicit browser refresh. Validate values against the provider usage page and test stale values after airplane mode.
+Claude is foreground only: the Claude screen opens settings/usage and auto-syncs once a signed-in page loads (branch fix/claude-auto-sync; unverified on device). Do not claim a 30-minute Claude background refresh. Codex keeps scheduled native refresh. Widget/app refresh opens the Claude connection for an explicit browser refresh. Validate values against the provider usage page and test stale values after airplane mode.
 
 ## Collaboration
 Make provider-specific changes in branches/PRs. Preserve Codex login/fetch behavior when changing Claude. Respect authentication, security checks and provider restrictions; never bypass challenges, log secrets, or send prompts to obtain usage. Do not claim a live fix from a build alone. See README for on-device checklist, diagnostics and build commands.
