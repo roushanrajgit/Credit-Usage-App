@@ -1,0 +1,11 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="@drawable/term_bg">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+ <LinearLayout android:id="@+id/title" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:minHeight="40dp" android:gravity="center_vertical">
+  <TextView android:id="@+id/heading" android:layout_width="wrap_content" android:layout_height="wrap_content" android:fontFamily="monospace" android:textColor="@color/term_text" android:textSize="12sp"/>
+  <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:fontFamily="monospace" android:textColor="@color/term_muted" android:textSize="11sp"/>
+ </LinearLayout>
+ <TextView android:id="@+id/refresh" android:layout_width="48dp" android:layout_height="40dp" android:gravity="center" android:fontFamily="monospace" android:text="[↻]" android:textColor="@color/term_green" android:textSize="14sp" android:contentDescription="Refresh usage"/>
+</LinearLayout>
+<ListView android:id="@+id/rows" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:layout_marginTop="6dp" android:divider="@android:color/transparent" android:dividerHeight="6dp"/>
+<TextView android:id="@+id/empty" android:layout_width="match_parent" android:layout_height="wrap_content" android:fontFamily="monospace" android:textColor="@color/term_text" android:textSize="12sp" android:padding="8dp"/>
+</LinearLayout>

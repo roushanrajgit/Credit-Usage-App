@@ -1,4 +1,4 @@
-# Usage Widget — Android preview 0.2
+# Usage Widget — Android preview 0.3
 
 Standard Android SDK project: API 26 minimum, API 36 target. No phone-specific APIs or companion server. This revision compiled successfully against Android API 36 and produced a signed APK. Live-account testing remains pending.
 
@@ -19,6 +19,14 @@ Browser protection/client-fingerprint differences are a plausible leading explan
 - Codex's fetch implementation and shared HTTP helper are byte-for-byte unchanged. Shared cache handling now preserves Claude during Codex updates and avoids holding its lock across network calls.
 
 Organization membership does not guarantee a paid subscription. Discovery covers identities/workspaces accessible to the current login, not unrelated email addresses. Extra usage budget is distinguished from prepaid credit.
+
+## Display (0.3)
+
+- **Style:** Display → Style picks **Cards** (Roboto, provider colours, gauges) or **Terminal** (monospace, coloured text bars). One choice applies to the app and the widget; the widget redraws immediately. Default: Cards.
+- **Accounts:** Display → Accounts lists every discovered Claude/Codex workspace with a switch. Hidden accounts are still fetched and cached, so switching one back on shows current values. New accounts default to shown. Choices are stored per account id on the device; "Disconnect & delete data" resets them. If every account is hidden, the widget says so instead of going blank.
+- **Colours:** remaining > 50% green, 20-50% amber, < 20% red. Claude #D97757, Codex #3ECF9E. Stale/unavailable rows get an amber badge.
+- **Logos:** `ic_claude` (spark) and `ic_codex` (`>_`) are simple placeholder vector marks, not official logos; replace the drawables to change them.
+- Widget bars use three pre-tinted ProgressBars per lane (only one visible) because per-view tinting through RemoteViews needs API 31+.
 
 ## Refresh behavior and limitation
 
@@ -56,7 +64,7 @@ export ANDROID_HOME=/path/to/Android/sdk
 ./build-apk.sh
 ```
 
-Output: build/UsageWidget-preview.apk. The script creates a non-debuggable APK without diagnostics and explicitly packages the JavaScript asset. Both routes use versionCode 2, versionName 0.2.0-preview.
+Output: build/UsageWidget-preview.apk. The script creates a non-debuggable APK without diagnostics and explicitly packages the JavaScript asset. Both routes use versionCode 3, versionName 0.3.0-preview.
 
 Signing environment variables: USAGE_WIDGET_KEYSTORE (absolute private local path), USAGE_WIDGET_STORE_PASSWORD, USAGE_WIDGET_KEY_PASSWORD, USAGE_WIDGET_KEY_ALIAS. The script requires all four. Gradle uses that configuration when all four are set; otherwise its normal development debug key is used, which will not update the existing preview installation.
 

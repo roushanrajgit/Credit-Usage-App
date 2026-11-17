@@ -1,6 +1,11 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="@drawable/card">
-<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical"><TextView android:id="@+id/title" android:layout_width="0dp" android:layout_weight="1" android:layout_height="48dp" android:gravity="center_vertical" android:text="USAGE / REMAINING" android:textColor="#A8F0C6" android:textStyle="bold" android:textSize="13sp"/><TextView android:id="@+id/refresh" android:layout_width="60dp" android:layout_height="48dp" android:gravity="center" android:text="↻" android:contentDescription="Refresh usage" android:textColor="#FFFFFF" android:textSize="26sp"/></LinearLayout>
-<TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#A7B0C0" android:textSize="11sp"/>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="@drawable/widget_bg">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+ <LinearLayout android:id="@+id/title" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:minHeight="40dp" android:gravity="center_vertical">
+  <TextView android:id="@+id/heading" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="AI usage" android:textColor="@color/text" android:textSize="15sp" android:textStyle="bold"/>
+  <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/muted" android:textSize="11sp"/>
+ </LinearLayout>
+ <ImageView android:id="@+id/refresh" android:layout_width="40dp" android:layout_height="40dp" android:padding="9dp" android:background="@drawable/refresh_bg" android:src="@drawable/ic_refresh" android:contentDescription="Refresh usage"/>
+</LinearLayout>
 <ListView android:id="@+id/rows" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:divider="@android:color/transparent" android:dividerHeight="8dp"/>
-<TextView android:id="@+id/empty" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Open Usage Widget to connect your accounts." android:textColor="#FFFFFF" android:padding="12dp"/>
+<TextView android:id="@+id/empty" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Open Usage Widget to connect your accounts." android:textColor="@color/text" android:padding="12dp"/>
 </LinearLayout>

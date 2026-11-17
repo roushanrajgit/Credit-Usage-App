@@ -1,0 +1,8 @@
+<resources>
+<color name="bg">#0C1017</color><color name="surface">#171C25</color><color name="widget_bg">#12161D</color><color name="row_bg">#1A2029</color>
+<color name="text">#E8EAF0</color><color name="muted">#8A93A3</color><color name="track">#2A313C</color>
+<color name="claude">#D97757</color><color name="claude_soft">#F0A889</color><color name="claude_tile">#3A2219</color>
+<color name="codex">#3ECF9E</color><color name="codex_soft">#6FE0B8</color><color name="codex_tile">#11302A</color>
+<color name="good">#4CC38A</color><color name="warn">#E8B04A</color><color name="warn_soft">#F2C46B</color><color name="warn_tile">#3B3018</color><color name="low">#E5604D</color>
+<color name="term_bg">#0B0E0C</color><color name="term_text">#C9D1C9</color><color name="term_green">#5BD08A</color><color name="term_muted">#7A857C</color>
+</resources>
